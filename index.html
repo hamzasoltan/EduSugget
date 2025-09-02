@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>EduSuggest - البحث الذكي</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      background: #f4f6f9; 
+      padding: 20px; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      transition: background-color 0.3s, color 0.3s;
+    }
+    
+    h1 { 
+      color: #0066cc; 
+      text-align: center; 
+    }
+    
+    .top-bar { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-bottom: 20px; 
+    }
+    
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: #0066cc;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 8px 15px;
+      border-radius: 5px;
+      margin-left: 10px;
+    }
+    
+    .logout-btn { 
+      background:red; 
+      color:white; 
+      border:none; 
+      padding:8px 15px; 
+      border-radius:5px; 
+      cursor:pointer; 
+    }
+    
+    .logout-btn:hover { 
+      background:darkred; 
+    }
+    
+    .search-container { 
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 10px; 
+      margin-bottom: 20px; 
+      justify-content: center; 
+    }
+    
+    input, select, textarea { 
+      padding: 10px; 
+      font-size: 16px; 
+      border: 1px solid #ddd; 
+      border-radius: 5px; 
+      font-family: Arial, sans-serif;
+    }
+    
+    input { 
+      width: 50%; 
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    button { 
+      padding: 10px 20px; 
+      font-size: 16px; 
+      background: #0066cc; 
+      color: white; 
+      border: none; 
+      border-radius: 5px; 
+      cursor: pointer; 
+    }
+    
+    button:hover { 
+      background: #004d99; 
+    }
+    
+    .container { 
+      display: flex; 
+      gap: 30px; 
+      margin-top: 20px; 
+      flex-wrap: wrap; 
+    }
+    
+    .section { 
+      flex: 1; 
+      min-width: 45%; 
+    }
+    
+    .card {
+      background: white; 
+      padding: 15px; 
+      margin-bottom: 15px;
+      border-radius: 10px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    
+    .card img { 
+      width: 100%; 
+      border-radius: 5px; 
+    }
+    
+    a { 
+      text-decoration: none; 
+      color: #0066cc; 
+    }
+    
+    a:hover { 
+      text-decoration: underline; 
+    }
+    
+    #summary { 
+      background: #e8f1fb; 
+      padding: 20px; 
+      border-radius: 10px; 
+      margin: 20px 0; 
+    }
+    
+    .error { 
+      color: red; 
+    }
+    
+    .loader {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0066cc;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    footer {
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      color: #666;
+      font-size: 14px;
+      border-top: 1px solid #ddd;
+    }
+    
+    .developer-link {
+      color: #0066cc;
+      font-weight: bold;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    
+    .developer-link:hover {
+      text-decoration: underline;
+      color: #004d99;
+    }
+    
+    #ai-section {
+      background: #e3f2fd;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    
+    .ai-question-container {
+      margin-bottom: 20px;
+    }
+    
+    .ai-response {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border-right: 4px solid #0066cc;
+    }
+    
+    .dark-mode {
+      background: #121212;
+      color: #f1f1f1;
+    }
+    
+    .dark-mode .card {
+      background: #1e1e1e;
+      color: #f1f1f1;
+    }
+    
+    .dark-mode #summary,
+    .dark-mode #ai-section {
+      background: #1a3a6a;
+      color: #f1f1f1;
+    }
+    
+    .dark-mode input,
+    .dark-mode select,
+    .dark-mode textarea {
+      background: #333;
+      color: #f1f1f1;
+      border-color: #444;
+    }
+    
+    .dark-mode a {
+      color: #4dabf7;
+    }
+    
+    .dark-mode .ai-response {
+      background: #2d3748;
+      color: #f1f1f1;
+    }
+    
+    .dark-mode .developer-link {
+      color: #4dabf7;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <div>
+      <button class="theme-toggle" id="theme-toggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+    <div>
+      <h1>EduSuggest – التوصيات الذكية</h1>
+    </div>
+    <div>
+      <button class="logout-btn" onclick="logout()">تسجيل الخروج</button>
+    </div>
+  </div>
+  
+  <p style="text-align: center;">ابحث عن أي موضوع واختر المستوى التعليمي:</p>
+  
+  <div class="search-container">
+    <input type="text" id="query" placeholder="مثال: الذكاء الاصطناعي، تاريخ مصر، رياضيات للأطفال">
+    <select id="level">
+      <option value="">-- اختر المستوى --</option>
+      <option value="for kids">ابتدائي</option>
+      <option value="for high school">اعدادي و ثانوي</option>
+      <option value="for university">جامعة</option>
+    </select>
+    <button onclick="searchContent()">بحث</button>
+  </div>
+
+
+  <!-- Wikipedia Summary -->
+  <div id="summary"></div>
+
+  <div class="container">
+    <div class="section">
+      <h2><i class="fab fa-youtube"></i> 🎥 فيديوهات يوتيوب</h2>
+      <div id="videos"></div>
+    </div>
+    <div class="section">
+      <h2><i class="fas fa-book"></i> 📚 كتب</h2>
+      <div id="books"></div>
+    </div>
+  </div>
+  
+  <footer>
+    <a href="https://www.facebook.com/Senko6666/" target="_blank" class="developer-link">
+      <i class="fab fa-facebook"></i> 🚀 تم تطويره بواسطة Hamza
+    </a>
+  </footer>
+
+  <div id="loader" class="loader"></div>
+  
+  <script>
+    // API Keys
+    const YOUTUBE_API_KEY = "AIzaSyDxy5ZRbQThWF33YRXlfcGN8055soWNSv8";
+    const GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes?q=";
+    const HUGGINGFACE_API_KEY = "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";
+
+    // Theme Toggle Functionality
+    function toggleTheme() {
+      document.body.classList.toggle('dark-mode');
+      const isDarkMode = document.body.classList.contains('dark-mode');
+      localStorage.setItem('darkMode', isDarkMode);
+      
+      const themeIcon = document.getElementById('theme-toggle').querySelector('i');
+      if (isDarkMode) {
+        themeIcon.classList.replace('fa-moon', 'fa-sun');
+      } else {
+        themeIcon.classList.replace('fa-sun', 'fa-moon');
+      }
+    }
+
+    // Initialize Theme
+    function initTheme() {
+      const savedTheme = localStorage.getItem('darkMode') === 'true';
+      if (savedTheme) {
+        document.body.classList.add('dark-mode');
+        document.getElementById('theme-toggle').querySelector('i').classList.replace('fa-moon', 'fa-sun');
+      }
+    }
+
+    // Logout function
+    function logout() {
+      localStorage.removeItem("loggedIn");
+      window.location.href = "Log in.html";
+    }
+
+    // AI Question Function
+    async function askAI() {
+      const question = document.getElementById("ai-question").value.trim();
+      const responseArea = document.getElementById("ai-response");
+      
+      if (!question) {
+        responseArea.innerHTML = "<p class='error'>الرجاء كتابة سؤال أولاً</p>";
+        return;
+      }
+      
+      responseArea.innerHTML = "جاري تحضير الإجابة...";
+      
+      try {
+        const aiResponse = await getAIAnswer(question);
+        responseArea.innerHTML = aiResponse;
+      } catch (error) {
+        responseArea.innerHTML = `<p class='error'>حدث خطأ: ${error.message}</p>`;
+      }
+    }
+
+    // AI Answer Function
+    async function getAIAnswer(query) {
+      try {
+        // في بيئة حقيقية، سيتم استخدام API من HuggingFace
+        // لكن لأغراض العرض، سنستخدم محاكاة للرد
+        
+        // محاكاة وقت الانتظار للطلب
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // محاكاة ردود مختلفة بناءً على نوع السؤال
+        if (query.includes("تعريف") || query.includes("ما هو") || query.includes("ما هي")) {
+          return `بناءً على سؤالك "<strong>${query}</strong>"، هذا مجال مثير للاهتمام. الذكاء الاصطناعي هو مجال من مجالات علوم الكمبيوتر يركز على إنشاء أنظمة قادرة على أداء المهام التي تتطلب عادةً ذكاءً بشريًا، مثل الإدراك البصري والتعرف على الكلام واتخاذ القرارات وترجمة اللغات.`;
+        } else if (query.includes("تاريخ") || query.includes("متى")) {
+          return `بناءً على سؤالك "<strong>${query}</strong>"، يمكنني أن أقدم لك معلومات تاريخية. تاريخ الذكاء الاصطناعي الحديث يعود إلى الخمسينيات من القرن الماضي، عندما بدأ الباحثون في استكشاف كيف يمكن للآلات أن تحاكي الذكاء البشري. شهد المجال تقدمًا كبيرًا في العقود الأخيرة مع تطور تقنيات التعلم العميق والتعلم الآلي.`;
+        } else if (query.includes("كيف") || query.includes("طريقة")) {
+          return `بناءً على سؤالك "<strong>${query}</strong>"، العملية تتضمن عدة خطوات. تعمل أنظمة الذكاء الاصطناعي من خلال تحليل كميات هائلة من البيانات للتعرف على الأنماط واتخاذ القرارات. تستخدم خوارزميات التعلم الآلي لتحسين أدائها مع مرور الوقت من خلال التجربة والخطأ، مما يمكنها من أداء مهام معقدة بدقة متزايدة.`;
+        } else {
+          return `شكراً لسؤالك "<strong>${query}</strong>". الذكاء الاصطناعي هو مجال متطور بسرعة يهدف إلى إنشاء أنظمة يمكنها أداء المهام التي تتطلب ذكاءً بشريًا. هذه الأنظمة قادرة على التعلم من البيانات، والتكيف مع المدخلات الجديدة، وأداء المهام التي تبدو بشرية. التطبيقات متنوعة وتشمل المركبات ذاتية القيادة، المساعدين الافتراضيين، أنظمة التوصية، والتشخيص الطبي.`;
+        }
+      } catch (error) {
+        throw new Error('فشل في الحصول على إجابة من الذكاء الاصطناعي');
+      }
+    }
+
+    // Wikipedia Summary API
+    async function getWikipediaSummary(query) {
+      const url = `https://ar.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(query)}`;
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('فشل في جلب المعلومات من ويكيبيديا');
+        const data = await response.json();
+        const summaryDiv = document.getElementById("summary");
+
+        if (data.type === "disambiguation" || !data.extract) {
+          summaryDiv.innerHTML = `<p class='error'>لا توجد معلومات مباشرة في ويكيبيديا. جرب كلمة بحثية أبسط.</p>`;
+        } else {
+          summaryDiv.innerHTML = `
+            <h2><i class="fab fa-wikipedia-w"></i> ملخص ويكيبيديا: ${data.title}</h2>
+            <p>${data.extract}</p>
+            ${data.thumbnail ? `<img src="${data.thumbnail.source}" width="200" style="float:left; margin-left:15px;">` : ''}
+            <a href="${data.content_urls.desktop.page}" target="_blank">قراءة المقال كاملاً</a>
+          `;
+        }
+      } catch (error) {
+        document.getElementById("summary").innerHTML = `<p class='error'>فشل في تحميل ملخص ويكيبيديا: ${error.message}</p>`;
+      }
+    }
+
+    // YouTube API
+    async function getYouTubeVideos(query) {
+      const maxResults = 10; 
+      const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=${maxResults}&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+      
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('فشل في جلب الفيديوهات');
+        const data = await response.json();
+        const container = document.getElementById("videos");
+        container.innerHTML = "";
+
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(item => {
+            const videoId = item.id.videoId;
+            const title = item.snippet.title;
+            const channel = item.snippet.channelTitle;
+            const thumb = item.snippet.thumbnails.medium.url;
+            const publishedAt = new Date(item.snippet.publishedAt).toLocaleDateString();
+
+            container.innerHTML += `
+              <div class="card">
+                <a href="https://www.youtube.com/watch?v=${videoId}" target="_blank">
+                  <img src="${thumb}" alt="${title}">
+                  <h3>${title}</h3>
+                </a>
+                <p><b>القناة:</b> ${channel}</p>
+                <p><b>تاريخ النشر:</b> ${publishedAt}</p>
+              </div>
+            `;
+          });
+        } else {
+          container.innerHTML = `<p class='error'>لا توجد فيديوهات لـ "${query}".</p>`;
+        }
+      } catch (error) {
+        document.getElementById("videos").innerHTML = `<p class='error'>فشل في تحميل الفيديوهات: ${error.message}</p>`;
+      }
+    }
+
+    // Google Books API
+    async function getBooks(query) {
+      const url = `${GOOGLE_BOOKS_API}${encodeURIComponent(query)}&maxResults=10`; 
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('فشل في جلب الكتب');
+        const data = await response.json();
+        const container = document.getElementById("books");
+        container.innerHTML = "";
+
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(book => {
+            const title = book.volumeInfo.title;
+            const authors = book.volumeInfo.authors ? book.volumeInfo.authors.join(", ") : "غير معروف";
+            const preview = book.volumeInfo.previewLink;
+            const thumbnail = book.volumeInfo.imageLinks?.thumbnail || "https://via.placeholder.com/128x196?text=No+Cover";
+
+            container.innerHTML += `
+              <div class="card">
+                <a href="${preview}" target="_blank">
+                  <img src="${thumbnail}" alt="${title}">
+                  <h3>${title}</h3>
+                </a>
+                <p><b>المؤلفون:</b> ${authors}</p>
+              </div>
+            `;
+          });
+        } else {
+          container.innerHTML = `<p class='error'>لا توجد كتب لـ "${query}".</p>`;
+        }
+      } catch (error) {
+        document.getElementById("books").innerHTML = `<p class='error'>فشل في تحميل الكتب: ${error.message}</p>`;
+      }
+    }
+
+    // Search Handler
+    function searchContent() {
+      const queryBase = document.getElementById("query").value.trim();
+      const level = document.getElementById("level").value;
+      if (queryBase === "") {
+        alert("الرجاء إدخال كلمة بحث!");
+        return;
+      }
+
+      const query = `${queryBase} ${level}`.trim();
+
+      // Show loader
+      document.getElementById("loader").style.display = "block";
+
+      // Clear previous results
+      document.getElementById("summary").innerHTML = "";
+      document.getElementById("videos").innerHTML = "";
+      document.getElementById("books").innerHTML = "";
+
+      // Get all content
+      Promise.all([
+        getWikipediaSummary(queryBase),
+        getYouTubeVideos(query),
+        getBooks(query)
+      ]).finally(() => {
+        document.getElementById("loader").style.display = "none";
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      initTheme();
+      document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+      // Check if user is logged in
+      if(localStorage.getItem("loggedIn") !== "true") {
+        alert("الرجاء تسجيل الدخول أولاً!");
+        window.location.href = "Log in.html";
+      }
+    });
+
+    // Handle Enter key press in search
+    document.getElementById("query").addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchContent();
+      }
+    });
+
+    // Handle Enter key press in AI question (Ctrl+Enter for new line)
+    document.getElementById("ai-question").addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.ctrlKey) {
+        e.preventDefault();
+        askAI();
+      }
+    });
+  </script>
+</body>
+</html>
